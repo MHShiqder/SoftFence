@@ -1,10 +1,11 @@
-{% assign list_class = "relative  py-1  hover:font-semibold text-white hover:cursor-pointer 
+{% assign list_class = "relative  py-1  hover:font-semibold text-black hover:cursor-pointer 
            after:content-[''] after:absolute after:left-0 after:bottom-0 
            after:h-[2px] after:bg-gradient-to-r after:from-[#38A59D] after:to-[#3D4C63] 
-           after:w-0 after:transition-all after:duration-300 hover:after:w-full" %}  
+           after:w-0 after:transition-all after:duration-300 hover:after:w-full" %}
 
-  <header>
-    <h2 class="header__title flex {% if section.settings.logo_style == '1' %} order-0{% else %}order-1 justify-center{% endif %}  w-1/3">
+<div class="relative">
+  <header class="relative top-0 z-30">
+    <h2 class="header__title flex justify-center   {% if section.settings.logo_style == '1' %} order-0 lg:justify-start{% else %}order-1  {% endif %}  w-1/3">
       {% if section.settings.logo %}
         <a href="{{ routes.root_url }}">
           <img
@@ -24,7 +25,6 @@
       {% endif %}
     </h2>
 
-    
     {% comment %} large device menu  {% endcomment %}
     <div class="header__menu lg:flex gap-2 hidden  {% if section.settings.logo_style == '1' %} order-1 justify-center {% else %}order-0 {% endif %}  w-1/3">
       {% for link in section.settings.menu.links %}
@@ -35,18 +35,11 @@
         </ul>
       {% endfor %}
     </div>
-    {% comment %} large device menu  {% endcomment %}
-    <div class="header__menu flex lg:hidden flex-col order-[-1] gap-2 ">
-      {% for link in section.settings.menu.links %}
-        <ul class="">
-          <li class="{{ list_class }}">
-            {{ link.title | link_to: link.url }}
-          </li>
-        </ul>
-      {% endfor %}
+    {% comment %} small device menu toggle button {% endcomment %}
+    <div onclick="toggleMenu()" class="header_mobile_icon flex lg:hidden cursor-pointer order-[-1] w-1/3 ">
+      {{ 'icon-hamburger.svg' | inline_asset_content }}
     </div>
 
-    
     <div class="header__icons order-3 w-1/3 justify-end">
       {% if shop.customer_accounts_enabled %}
         {{ 'icon-account.svg' | inline_asset_content | link_to: routes.account_url }}
@@ -61,7 +54,22 @@
       </a>
     </div>
   </header>
-
+  <div id="mobileMenu" class="header_mobile_menu  fixed lg:hidden absolute top-0 left-0 w-4/5 h-screen z-50  bg-white p-8  order-[-1] shadow-lg transform -translate-x-full transition-all duration-300 ease-in-out ">
+    <div class="flex  flex-col gap-2 ">
+      
+      <ul class="">
+        <li class="pb-24 cursor-pointer h-12 w-12" onclick="toggleMenu()">
+          {{ 'icon-close.svg' | inline_asset_content }}
+        </li>
+      {% for link in section.settings.menu.links %}
+          <li class="{{ list_class }} w-32">
+            {{ link.title | link_to: link.url }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
 
 {% stylesheet %}
   header {
@@ -84,7 +92,7 @@
   header svg {
     width: 2rem;
   }
-  
+
   header .header__icons {
     display: flex;
     gap: 1rem;
@@ -136,3 +144,11 @@
   ]
 }
 {% endschema %}
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById("mobileMenu");
+    menu.classList.toggle("translate-x-0");
+    menu.classList.toggle("-translate-x-full");
+    menu.classList.toggle("opacity-100");
+  }
+</script>
