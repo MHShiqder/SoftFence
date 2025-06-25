@@ -5,6 +5,7 @@
     {% render 'css-variables' %}
 
     {% # Load and preload the critical CSS %}
+    {{ 'output.css' | asset_url | stylesheet_tag: preload: true }}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
 
     {% # Social, title, etc. %}
