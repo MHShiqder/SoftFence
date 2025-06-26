@@ -1,0 +1,232 @@
+{% comment %}
+  Hero Slideshow Section - Fixed Version
+  Now shows full-width background image and fixes swiper container width.
+{% endcomment %}
+
+<section id="hero-slideshow" class="relative overflow-hidden">
+  {% assign container_class = '' %}
+  {% case section.settings.container_type %}
+    {% when 'full' %}
+      {% assign container_class = 'w-full' %}
+    {% when 'custom' %}
+      {% assign container_class = 'max-w-screen-xl mx-auto px-4' %}
+    {% else %}
+      {% assign container_class = 'max-w-[1200px] mx-auto px-4' %}
+  {% endcase %}
+
+  {% assign height_class = '' %}
+  {% case section.settings.slide_height %}
+    {% when 'full' %}
+      {% assign height_class = 'h-screen' %}
+    {% when 'small' %}
+      {% assign height_class = 'h-[300px]' %}
+    {% when 'medium' %}
+      {% assign height_class = 'h-[500px]' %}
+    {% when 'large' %}
+      {% assign height_class = 'h-[700px]' %}
+    {% else %}
+      {% assign height_class = 'auto' %}
+  {% endcase %}
+
+  <div class="relative {{ height_class }} w-full">
+    <div class="swiper-container w-full">
+      <div class="swiper-wrapper">
+        {% for block in section.blocks %}
+          {% assign slide = block.settings %}
+          {% assign bg_position = slide.image_position | default: 'center' %}
+          <div class="swiper-slide relative {{ height_class }} w-full bg-cover bg-{{ bg_position }}" style="background-image: url({{ slide.bg_image | image_url: width: 3840 }});">
+
+            {% if section.settings.show_overlay %}
+              <div class="absolute inset-0 {% if section.settings.overlay_type == 'white' %}bg-white/50{% else %}bg-black/50{% endif %} z-10"></div>
+            {% endif %}
+
+            {% assign text_align = '' %}
+            {% case slide.content_alignment %}
+              {% when 'left' %} {% assign text_align = 'items-start text-left' %}
+              {% when 'center' %} {% assign text_align = 'items-center text-center' %}
+              {% when 'right' %} {% assign text_align = 'items-end text-right' %}
+            {% endcase %}
+
+            {% assign content_width = '' %}
+            {% if slide.content_width == 'full' %}
+              {% assign content_width = 'w-full' %}
+            {% else %}
+              {% assign content_width = 'max-w-2xl' %}
+            {% endif %}
+
+            <div class="absolute inset-0 z-20 flex {{ text_align }} justify-center p-6">
+              <div class="{{ container_class }}">
+                <div class="{{ content_width }} {% if section.settings.enable_animations %}animate-slide{% endif %}">
+                  <h2 class="text-4xl font-bold mb-2 {% if slide.text_color == 'white' %}text-white{% else %}text-black{% endif %}">{{ slide.title | default: 'Slide Title' }}</h2>
+                  <h3 class="text-2xl mb-2 {% if slide.text_color == 'white' %}text-white{% else %}text-black{% endif %}">{{ slide.subtitle | default: 'Slide Subtitle' }}</h3>
+                  <p class="mb-4 {% if slide.text_color == 'white' %}text-white{% else %}text-black{% endif %}">{{ slide.description | default: 'Slide description goes here.' }}</p>
+                  <div class="flex flex-wrap gap-3 justify-{{ slide.content_alignment }}">
+                    {% for i in (1..2) %}
+                      {% assign btn_text_key = 'btn' | append: i | append: '_text' %}
+                      {% assign btn_link_key = 'btn' | append: i | append: '_link' %}
+                      {% assign btn_style_key = 'btn' | append: i | append: '_style' %}
+                      {% assign btn_size_key = 'btn' | append: i | append: '_size' %}
+
+                      {% assign btn_text = block.settings[btn_text_key] %}
+                      {% assign btn_link = block.settings[btn_link_key] %}
+                      {% assign btn_style = block.settings[btn_style_key] | default: 'white' %}
+                      {% assign btn_size = block.settings[btn_size_key] | default: 'medium' %}
+
+                      {% if btn_text != blank %}
+                        {% assign style_class = '' %}
+                        {% case btn_style %}
+                          {% when 'white' %} {% assign style_class = 'bg-white text-black' %}
+                          {% when 'black' %} {% assign style_class = 'bg-black text-white' %}
+                          {% when 'outline' %} {% assign style_class = 'border border-white text-white' %}
+                        {% endcase %}
+
+                        {% assign size_class = '' %}
+                        {% case btn_size %}
+                          {% when 'small' %} {% assign size_class = 'px-3 py-1 text-sm' %}
+                          {% when 'medium' %} {% assign size_class = 'px-5 py-2' %}
+                          {% when 'large' %} {% assign size_class = 'px-6 py-3 text-lg' %}
+                        {% endcase %}
+
+                        <a href="{{ btn_link }}" class="rounded {{ size_class }} {{ style_class }} hover:opacity-90 transition">
+                          {{ btn_text }}
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if section.settings.show_pagination %}
+        <div class="swiper-pagination {{ section.settings.pagination_position }} z-30"></div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    new Swiper(".swiper-container", {
+      loop: true,
+      autoplay: {{ section.settings.auto_rotate | default: false }} ? {
+        delay: {{ section.settings.rotate_speed | times: 1000 }},
+        disableOnInteraction: false
+      } : false,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
+      allowTouchMove: {{ section.settings.enable_swipe }}
+    });
+  });
+</script>
+
+<style>
+  .swiper-pagination.left { left: 1rem; right: auto; }
+  .swiper-pagination.right { right: 1rem; left: auto; }
+  .swiper-pagination.bottom { bottom: 1rem; }
+  .swiper-pagination-bullet {
+    background-color: {% if section.settings.pagination_color == 'black' %}#000{% else %}#fff{% endif %};
+    opacity: 0.7;
+  }
+  .swiper-pagination-bullet-active { opacity: 1; }
+
+  @keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide > * {
+    opacity: 0;
+    animation: fadeUp 0.8s ease-out forwards;
+  }
+  .animate-slide > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-slide > *:nth-child(2) { animation-delay: 0.3s; }
+  .animate-slide > *:nth-child(3) { animation-delay: 0.5s; }
+  .animate-slide > *:nth-child(4) { animation-delay: 0.7s; }
+</style>
+
+{% schema %}
+{
+  "name": "Hero Slideshow",
+  "settings": [
+    { "type": "select", "id": "container_type", "label": "Container Type", "options": [
+        { "value": "full", "label": "Full Width" },
+        { "value": "custom", "label": "Custom Width" },
+        { "value": "fixed", "label": "1200px" }], "default": "full" },
+    { "type": "select", "id": "slide_height", "label": "Slide Height", "options": [
+        { "value": "auto", "label": "Adapt to image" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full", "label": "Full Page" }], "default": "large" },
+    { "type": "checkbox", "id": "show_overlay", "label": "Show Overlay", "default": false },
+    { "type": "select", "id": "overlay_type", "label": "Overlay Color", "options": [
+        { "value": "white", "label": "White" },
+        { "value": "black", "label": "Black" }], "default": "black" },
+    { "type": "checkbox", "id": "show_pagination", "label": "Show Pagination", "default": true },
+    { "type": "select", "id": "pagination_position", "label": "Pagination Position", "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" },
+        { "value": "bottom", "label": "Bottom" }], "default": "bottom" },
+    { "type": "select", "id": "pagination_color", "label": "Pagination Color", "options": [
+        { "value": "white", "label": "White" },
+        { "value": "black", "label": "Black" }], "default": "white" },
+    { "type": "checkbox", "id": "auto_rotate", "label": "Auto Rotate Slides", "default": true },
+    { "type": "range", "id": "rotate_speed", "label": "Auto Rotate Interval (sec)", "min": 1, "max": 10, "step": 1, "default": 5 },
+    { "type": "checkbox", "id": "enable_swipe", "label": "Enable drag/swipe on touch", "default": true },
+    { "type": "checkbox", "id": "enable_animations", "label": "Animate text content on slide", "default": true }
+  ],
+  "blocks": [
+    { "type": "slide", "name": "Slide", "settings": [
+      { "type": "image_picker", "id": "bg_image", "label": "Background Image" },
+      { "type": "text", "id": "title", "label": "Title", "default": "Slide Title" },
+      { "type": "text", "id": "subtitle", "label": "Subtitle", "default": "Slide Subtitle" },
+      { "type": "textarea", "id": "description", "label": "Description", "default": "Slide description goes here." },
+      { "type": "select", "id": "content_width", "label": "Content Width", "options": [
+        { "value": "full", "label": "Full Width" },
+        { "value": "custom", "label": "Custom Width" }], "default": "custom" },
+      { "type": "select", "id": "content_alignment", "label": "Content Alignment", "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }], "default": "center" },
+      { "type": "select", "id": "text_color", "label": "Text Color", "options": [
+        { "value": "black", "label": "Black" },
+        { "value": "white", "label": "White" }], "default": "white" },
+      { "type": "text", "id": "btn1_text", "label": "Button 1 Text", "default": "Shop Now" },
+      { "type": "url", "id": "btn1_link", "label": "Button 1 Link" },
+      { "type": "select", "id": "btn1_style", "label": "Button 1 Style", "options": [
+        { "value": "white", "label": "White BG" },
+        { "value": "black", "label": "Black BG" },
+        { "value": "outline", "label": "Outline" }], "default": "white" },
+      { "type": "select", "id": "btn1_size", "label": "Button 1 Size", "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }], "default": "medium" },
+      { "type": "text", "id": "btn2_text", "label": "Button 2 Text", "default": "Learn More" },
+      { "type": "url", "id": "btn2_link", "label": "Button 2 Link" },
+      { "type": "select", "id": "btn2_style", "label": "Button 2 Style", "options": [
+        { "value": "white", "label": "White BG" },
+        { "value": "black", "label": "Black BG" },
+        { "value": "outline", "label": "Outline" }], "default": "outline" },
+      { "type": "select", "id": "btn2_size", "label": "Button 2 Size", "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }], "default": "medium" },
+      { "type": "select", "id": "image_position", "label": "Background Image Focal Point", "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "top", "label": "Top" },
+        { "value": "bottom", "label": "Bottom" },
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }], "default": "center" }
+    ]}
+  ],
+  "presets": [
+    { "name": "Hero Slideshow", "category": "Hero", "blocks": [
+      { "type": "slide" },
+      { "type": "slide" }
+    ] }
+  ]
+}
+{% endschema %}
